@@ -24,7 +24,7 @@ foreach ($categoryrange as $category) {
                 $start = microtime(true);
                 $json = file_get_contents('https://secure.runescape.com/m=itemdb_rs/api/catalogue/items.json?category='.$category.'&alpha='.$alphabet.'&page='.$pagerange);
                 $objects = json_decode($json, true);
-                echo nl2br('succesfully parsed category='.$category.'&alpha='.$alphabet.'&page='.$pagerange."\n");
+                echo 'succesfully parsed category='.$category.'&alpha='.$alphabet.'&page='.$pagerange."<br>";
                 $time_elapsed_secs = microtime(true) - $start;
 
                 // sleep so content has time to load and not too many requests are made too soon after eachother
@@ -46,10 +46,13 @@ foreach ($categoryrange as $category) {
                                 error_reporting(0);
                                 $itemname =  $tablerow->getElementsByTagName('td')[0]->nodeValue;
                                 $buylimit = $tablerow->getElementsByTagName('td')[1]->nodeValue;
-                                if($object['name'] == $itemname){
+                                $itemname_lowercase = preg_replace('/[^a-z]/', "", strtolower($itemname));
+                                $objectname_lowercase = preg_replace('/[^a-z]/', "", strtolower($object['name']));
+                                if($objectname_lowercase == $itemname_lowercase){
                                     $infoArray = array('name' => $object['name'],'buylimit' => $buylimit,'type' => $object['type'],'icon' => $object['icon'],'icon_large' => $object['icon_large'],'id' => intval($object['id']));
                                     $id = intval($object['id']);
                                     $items[$id] = $infoArray;
+                                    echo "pushed ".$object['name'].", now ".count($items)." items in array<br><br>";
                                     // echo nl2br(json_encode($items, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK) ."\n");
                                 }
                             }
@@ -74,7 +77,6 @@ foreach ($categoryrange as $category) {
 }
 
 
-sort($items);
 // encode items array to json
 
 $json = json_encode($items, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
